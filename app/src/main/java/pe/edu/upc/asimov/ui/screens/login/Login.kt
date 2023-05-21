@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun Login(goTest: () -> Unit){
+fun Login(goTest: (studentCode: String, examCode: String) -> Unit){
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -74,7 +74,7 @@ fun Login(goTest: () -> Unit){
         Spacer(modifier = Modifier.height(20.dp))
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { goTest() },
+            onClick = { goTest(studentCode.value, testCode.value) },
             colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
         ) {
             Text(
