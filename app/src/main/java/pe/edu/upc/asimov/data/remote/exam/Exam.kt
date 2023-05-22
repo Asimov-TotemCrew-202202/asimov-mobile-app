@@ -7,8 +7,11 @@ data class Exam(
 )
 
 data class Question(
+    val id: String,
     val question: String,
-    val alternatives: List<Alternative>
+    val alternatives: List<Alternative>,
+    var selected: String,
+    val correctAlternative: String
 )
 
 data class Alternative(

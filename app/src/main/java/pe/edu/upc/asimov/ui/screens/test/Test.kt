@@ -1,5 +1,6 @@
 package pe.edu.upc.asimov.ui.screens.test
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,10 +17,9 @@ import androidx.compose.ui.unit.sp
 import pe.edu.upc.asimov.data.remote.exam.Alternative
 import pe.edu.upc.asimov.data.remote.exam.Exam
 import pe.edu.upc.asimov.data.remote.exam.Question
-import pe.edu.upc.asimov.data.remote.test.Answer
 
 @Composable
-fun Test(goBack: () -> Unit, exam: Exam){
+fun Test(goBack: (List<Question>) -> Unit, exam: Exam){
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -35,14 +35,16 @@ fun Test(goBack: () -> Unit, exam: Exam){
         Spacer(modifier = Modifier.height(10.dp))
         LazyColumn{
             items(exam.questions){question ->
-                Question(question)
+                Question(question, onSelectedOption = {optionSelected, questionId ->
+                    exam.questions[questionId.toInt()-1].selected = optionSelected
+                })
                 Spacer(modifier = Modifier.height(10.dp))
             }
         }
         Spacer(modifier = Modifier.height(20.dp))
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { goBack() },
+            onClick = { goBack(exam.questions) },
             colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
         ) {
             Text(
@@ -55,7 +57,7 @@ fun Test(goBack: () -> Unit, exam: Exam){
     }
 }
 @Composable
-fun Question(question: Question){
+fun Question(question: Question, onSelectedOption: (String, String) -> Unit){
     Card(
         modifier = Modifier
             .padding(5.dp)
@@ -65,14 +67,16 @@ fun Question(question: Question){
         Column {
             Text(text = question.question, fontWeight = FontWeight.Bold)
             for(alternative in question.alternatives){
-                Answer(alternative)
+                Answer(alternative, onSelectedOption = {selected ->
+                    onSelectedOption(selected, question.id)
+                })
             }
         }
     }
 }
 
 @Composable
-fun Answer(alternative: Alternative){
+fun Answer(alternative: Alternative, onSelectedOption: (String) -> Unit){
     val selected = remember {
         mutableStateOf(false)
     }
@@ -83,7 +87,10 @@ fun Answer(alternative: Alternative){
             .fillMaxWidth()
             .padding(2.dp)
     ){
-        RadioButton(selected = selected.value, onClick = { selected.value = !selected.value })
+        RadioButton(selected = selected.value, onClick = {
+            selected.value = !selected.value
+            onSelectedOption(alternative.id)
+        })
         Text(text = alternative.text)
     }
 }

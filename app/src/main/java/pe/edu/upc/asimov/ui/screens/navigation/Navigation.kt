@@ -1,6 +1,7 @@
 package pe.edu.upc.asimov.ui.screens.navigation
 
 import android.util.Log
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,6 +67,9 @@ fun Navigation(){
             val exam = remember {
                 mutableStateOf(Exam("","", emptyList()))
             }
+            val score = remember {
+                mutableStateOf(0)
+            }
 
             val examInterface = ExamClient.build()
             val getExam = examInterface.getExam(testCode)
@@ -82,9 +86,18 @@ fun Navigation(){
                 }
             })
 
-            Test(goBack = {
-                navController.popBackStack()
+            Test(goBack = { questions ->
+                questions.forEach { question ->
+                    if (question.correctAlternative == question.selected) {
+                        score.value = score.value + 1
+                    }
+                }
+                navController.navigate("score/${score.value}")
             }, exam = exam.value)
+        }
+        composable("score/{score}", arguments = listOf(navArgument("score"){ type = NavType.StringType})){
+            val score = it.arguments?.getString("score") as String
+            Text(text = score)
         }
     }
 }
