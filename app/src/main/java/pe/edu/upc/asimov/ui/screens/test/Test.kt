@@ -1,6 +1,5 @@
 package pe.edu.upc.asimov.ui.screens.test
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -58,6 +57,10 @@ fun Test(goBack: (List<Question>) -> Unit, exam: Exam){
 }
 @Composable
 fun Question(question: Question, onSelectedOption: (String, String) -> Unit){
+    val selectedOption = remember {
+        mutableStateOf(question.selected)
+    }
+
     Card(
         modifier = Modifier
             .padding(5.dp)
@@ -67,7 +70,8 @@ fun Question(question: Question, onSelectedOption: (String, String) -> Unit){
         Column {
             Text(text = question.question, fontWeight = FontWeight.Bold)
             for(alternative in question.alternatives){
-                Answer(alternative, onSelectedOption = {selected ->
+                Answer(selectedOption.value, alternative, onSelectedOption = {selected ->
+                    selectedOption.value = selected
                     onSelectedOption(selected, question.id)
                 })
             }
@@ -76,21 +80,19 @@ fun Question(question: Question, onSelectedOption: (String, String) -> Unit){
 }
 
 @Composable
-fun Answer(alternative: Alternative, onSelectedOption: (String) -> Unit){
-    val selected = remember {
-        mutableStateOf(false)
-    }
-
+fun Answer(selected: String?, alternative: Alternative, onSelectedOption: (String) -> Unit){
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .padding(2.dp)
     ){
-        RadioButton(selected = selected.value, onClick = {
-            selected.value = !selected.value
-            onSelectedOption(alternative.id)
-        })
+        RadioButton(
+            selected = selected == alternative.id,
+            onClick = {
+                onSelectedOption(alternative.id)
+            }
+        )
         Text(text = alternative.text)
     }
 }

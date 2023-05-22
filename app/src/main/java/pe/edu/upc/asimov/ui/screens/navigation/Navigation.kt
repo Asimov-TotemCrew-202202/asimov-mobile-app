@@ -15,6 +15,7 @@ import pe.edu.upc.asimov.data.remote.exam.ExamClient
 import pe.edu.upc.asimov.data.remote.students.Student
 import pe.edu.upc.asimov.data.remote.students.StudentClient
 import pe.edu.upc.asimov.ui.screens.login.Login
+import pe.edu.upc.asimov.ui.screens.score.Score
 import pe.edu.upc.asimov.ui.screens.test.Test
 import retrofit2.Call
 import retrofit2.Callback
@@ -92,12 +93,24 @@ fun Navigation(){
                         score.value = score.value + 1
                     }
                 }
-                navController.navigate("score/${score.value}")
+                navController.navigate("score/${score.value}/${questions.size}")
             }, exam = exam.value)
         }
-        composable("score/{score}", arguments = listOf(navArgument("score"){ type = NavType.StringType})){
+        composable(
+            "score/{score}/{questions}",
+            arguments = listOf(
+                navArgument("score"){ type = NavType.StringType},
+                navArgument("questions"){ type = NavType.StringType}
+            )
+        ) {
             val score = it.arguments?.getString("score") as String
-            Text(text = score)
+            val questions = it.arguments?.getString("questions") as String
+            Score(
+                goHome = {
+                    navController.navigate("login")
+                },
+                score = score,
+                questions = questions)
         }
     }
 }
