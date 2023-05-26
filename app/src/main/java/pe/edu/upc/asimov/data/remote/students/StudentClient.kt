@@ -4,7 +4,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object StudentClient {
-    private const val API_BASE_URL = "https://asimov-mockend-production.up.railway.app/"
+    private const val API_BASE_URL = "https://asimov-mockend-production-8a10.up.railway.app/"
     private var studentInterface: StudentInterface? = null
 
     fun build(): StudentInterface {
