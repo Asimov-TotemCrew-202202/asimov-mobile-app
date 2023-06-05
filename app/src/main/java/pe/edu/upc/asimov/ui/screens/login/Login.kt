@@ -1,6 +1,7 @@
 package pe.edu.upc.asimov.ui.screens.login
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -9,12 +10,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun Login(goTest: (studentCode: String, examCode: String) -> Unit){
+fun Login(
+    goTest: (studentCode: String, examCode: String) -> Unit,
+    goScores: (studentCodeScores: String) -> Unit
+){
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -24,6 +29,7 @@ fun Login(goTest: (studentCode: String, examCode: String) -> Unit){
     ) {
         val studentCode = remember { mutableStateOf("") }
         val testCode = remember { mutableStateOf("") }
+        val studentCodeScores = remember { mutableStateOf("") }
 
         Card(
             modifier = Modifier
@@ -54,23 +60,31 @@ fun Login(goTest: (studentCode: String, examCode: String) -> Unit){
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Left,
             fontWeight = FontWeight.Bold,
-            text = "Código de alumno")
+            text = "Código de alumno"
+        )
         TextField(
             modifier = Modifier.fillMaxWidth(),
             value = studentCode.value,
-            onValueChange = { studentCode.value = it })
-
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number
+            ),
+            onValueChange = { studentCode.value = it }
+        )
         Spacer(modifier = Modifier.height(20.dp))
         Text(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Left,
             fontWeight = FontWeight.Bold,
-            text = "Código de evaluación")
+            text = "Código de evaluación"
+        )
         TextField(
             modifier = Modifier.fillMaxWidth(),
             value = testCode.value,
-            onValueChange = { testCode.value = it })
-
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number
+            ),
+            onValueChange = { testCode.value = it }
+        )
         Spacer(modifier = Modifier.height(20.dp))
         Button(
             modifier = Modifier.fillMaxWidth(),
@@ -79,6 +93,40 @@ fun Login(goTest: (studentCode: String, examCode: String) -> Unit){
         ) {
             Text(
                 "Continuar",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
+        }
+        Spacer(modifier = Modifier.height(30.dp))
+        Text(
+            "Visualizar notas por alumno",
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Left,
+            fontWeight = FontWeight.Bold,
+            text = "Código de alumno"
+        )
+        TextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = studentCodeScores.value,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number
+            ),
+            onValueChange = { studentCodeScores.value = it }
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { goScores(studentCodeScores.value) },
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
+        ) {
+            Text(
+                "Ver mis notas",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp

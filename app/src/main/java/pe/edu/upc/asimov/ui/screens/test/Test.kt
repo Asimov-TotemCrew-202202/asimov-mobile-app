@@ -60,7 +60,6 @@ fun Question(question: Question, onSelectedOption: (String, String) -> Unit){
     val selectedOption = remember {
         mutableStateOf(question.selected)
     }
-
     Card(
         modifier = Modifier
             .padding(5.dp)

@@ -5,6 +5,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,6 +15,7 @@ import pe.edu.upc.asimov.data.remote.exam.Exam
 import pe.edu.upc.asimov.data.remote.exam.ExamClient
 import pe.edu.upc.asimov.data.remote.students.Student
 import pe.edu.upc.asimov.data.remote.students.StudentClient
+import pe.edu.upc.asimov.ui.screens.getScores.GetScores
 import pe.edu.upc.asimov.ui.screens.login.Login
 import pe.edu.upc.asimov.ui.screens.score.Score
 import pe.edu.upc.asimov.ui.screens.test.Test
@@ -61,7 +63,9 @@ fun Navigation(){
                         Log.d("Error",t.toString())
                     }
                 })
-            })
+            },
+                goScores = { studentCodeScores -> navController.navigate("scores/$studentCodeScores")}
+            )
         }
         composable("test/{testCode}", arguments = listOf(navArgument("testCode"){ type = NavType.StringType})){
             val testCode = it.arguments?.getString("testCode") as String
@@ -74,6 +78,10 @@ fun Navigation(){
 
             val examInterface = ExamClient.build()
             val getExam = examInterface.getExam(testCode)
+
+            val navOptions = NavOptions.Builder()
+                .setPopUpTo("test/{testCode}", true)
+                .build()
 
             getExam.enqueue(object : Callback<Exam> {
                 override fun onResponse(call: Call<Exam>, response: Response<Exam>) {
@@ -93,7 +101,7 @@ fun Navigation(){
                         score.value = score.value + 1
                     }
                 }
-                navController.navigate("score/${score.value}/${questions.size}")
+                navController.navigate("score/${score.value}/${questions.size}", navOptions)
             }, exam = exam.value)
         }
         composable(
@@ -105,12 +113,25 @@ fun Navigation(){
         ) {
             val score = it.arguments?.getString("score") as String
             val questions = it.arguments?.getString("questions") as String
+            val navOptions = NavOptions.Builder()
+                .setPopUpTo("score/{score}/{questions}", true)
+                .setPopUpTo("test/{testCode}", true)
+                .build()
             Score(
                 goHome = {
-                    navController.navigate("login")
+                    navController.navigate("login", navOptions)
                 },
                 score = score,
                 questions = questions)
+        }
+        composable(
+            "scores/{studentCode}",
+            arguments = listOf(
+                navArgument("studentCode"){ type = NavType.StringType }
+            )
+        ) {
+            val studentCode = it.arguments?.getString("studentCode") as String
+            GetScores(studentCode = studentCode, goBack = { navController.popBackStack() })
         }
     }
 }
