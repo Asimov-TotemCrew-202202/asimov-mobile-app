@@ -19,6 +19,7 @@ data class Answer(
 )
 
 data class ExamScore(
+    val studentCode: String,
     val title: String,
     val score: Int
 )

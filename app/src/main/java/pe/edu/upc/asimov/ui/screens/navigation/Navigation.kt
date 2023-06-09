@@ -32,6 +32,9 @@ fun Navigation(){
             val verified = remember {
                 mutableStateOf(false)
             }
+            val verifiedScores = remember {
+                mutableStateOf(false)
+            }
             val studentInterface = StudentClient.build()
             val examInterface = ExamClient.build()
 
@@ -64,7 +67,23 @@ fun Navigation(){
                     }
                 })
             },
-                goScores = { studentCodeScores -> navController.navigate("scores/$studentCodeScores")}
+                goScores = { studentCodeScores ->
+                    val getStudent = studentInterface.getStudent(studentCodeScores)
+                    getStudent.enqueue(object : Callback<Student> {
+                        override fun onResponse(call: Call<Student>, response: Response<Student>) {
+                            if (response.isSuccessful) {
+                                Log.d("Debug",response.body()!!.toString())
+                                verifiedScores.value = true
+                            }
+                        }
+                        override fun onFailure(call: Call<Student>, t: Throwable) {
+                            Log.d("Error",t.toString())
+                        }
+                    })
+                    if(verifiedScores.value){
+                        navController.navigate("scores/$studentCodeScores")
+                    }
+                }
             )
         }
         composable("test/{testCode}", arguments = listOf(navArgument("testCode"){ type = NavType.StringType})){
