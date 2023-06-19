@@ -34,7 +34,7 @@ fun GetScores(studentCode: String, goBack: () -> Unit){
         ExamScore("201910146","Ingles - 2º Competencia", 20),
         ExamScore("201910146","Historia - 1º Competencia", 16)
     )
-    val studentExams = exams.filter{ it.studentCode == studentCode }
+    val studentExams = exams.filter{ it.studentCode == "201910421" }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -47,7 +47,7 @@ fun GetScores(studentCode: String, goBack: () -> Unit){
             fontSize = 20.sp
         )
         Text(
-            text = "Codigo de alumno: $studentCode",
+            text = "Codigo de alumno: 201910421",
             fontSize = 20.sp
         )
         Spacer(modifier = Modifier.height(20.dp))
