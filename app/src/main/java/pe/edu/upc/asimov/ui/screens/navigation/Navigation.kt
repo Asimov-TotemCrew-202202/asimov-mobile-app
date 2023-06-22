@@ -71,7 +71,7 @@ fun Navigation(){
         composable("test/{testCode}", arguments = listOf(navArgument("testCode"){ type = NavType.StringType})){
             val testCode = it.arguments?.getString("testCode") as String
             val exam = remember {
-                mutableStateOf(Exam("","", emptyList()))
+                mutableStateOf(Exam("",emptyList()))
             }
             val score = remember {
                 mutableStateOf(0)
@@ -98,20 +98,14 @@ fun Navigation(){
 
             Test(goBack = { questions ->
                 questions.forEach { question ->
-                    if (question.correctAlternative == question.selected) {
+                    if (question.correctOptionOrder == question.selected) {
                         score.value = score.value + 1
                     }
                 }
                 navController.navigate("score/${score.value}/${questions.size}", navOptions)
             }, exam = exam.value)
         }
-        composable(
-            "score/{score}/{questions}",
-            arguments = listOf(
-                navArgument("score"){ type = NavType.StringType},
-                navArgument("questions"){ type = NavType.StringType}
-            )
-        ) {
+        composable("score/{score}/{questions}", arguments = listOf(navArgument("score"){ type = NavType.StringType}, navArgument("questions"){ type = NavType.StringType})){
             val score = it.arguments?.getString("score") as String
             val questions = it.arguments?.getString("questions") as String
             val navOptions = NavOptions.Builder()
@@ -125,12 +119,7 @@ fun Navigation(){
                 score = score,
                 questions = questions)
         }
-        composable(
-            "scores/{studentCode}",
-            arguments = listOf(
-                navArgument("studentCode"){ type = NavType.StringType }
-            )
-        ) {
+        composable("scores/{studentCode}", arguments = listOf(navArgument("studentCode"){ type = NavType.StringType })){
             val studentCode = it.arguments?.getString("studentCode") as String
             GetScores(studentCode = studentCode, goBack = { navController.navigate("login") })
         }

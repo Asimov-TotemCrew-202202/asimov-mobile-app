@@ -5,7 +5,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object UserClient {
-    private const val API_BASE_URL = "http://10.0.2.2:8080/api/auth/"
+    private const val API_BASE_URL = "http://10.0.2.2:8080/api/v1/auth/"
     private var userInterface: UserInterface? = null
 
     fun build(): UserInterface {

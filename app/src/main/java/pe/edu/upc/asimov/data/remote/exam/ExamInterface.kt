@@ -5,6 +5,6 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface ExamInterface {
-    @GET("exams/{index}")
+    @GET("{index}/exams")
     fun getExam(@Path("index") index: String): Call<Exam>
 }

@@ -30,20 +30,10 @@ fun Test(goBack: (List<Question>) -> Unit, exam: Exam){
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp
         )
-        Text(text = exam.course)
-        Spacer(modifier = Modifier.height(10.dp))
-        LazyColumn{
-            items(exam.questions){question ->
-                Question(question, onSelectedOption = {optionSelected, questionId ->
-                    exam.questions[questionId.toInt()-1].selected = optionSelected
-                })
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-        }
         Spacer(modifier = Modifier.height(20.dp))
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { goBack(exam.questions) },
+            onClick = { goBack(exam.examDetailResources) },
             colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
         ) {
             Text(
@@ -52,6 +42,14 @@ fun Test(goBack: (List<Question>) -> Unit, exam: Exam){
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp
             )
+        }
+        LazyColumn{
+            items(exam.examDetailResources){question ->
+                Question(question, onSelectedOption = {optionSelected, questionId ->
+                    exam.examDetailResources[questionId.toInt()].selected = optionSelected
+                })
+                Spacer(modifier = Modifier.height(10.dp))
+            }
         }
     }
 }
@@ -68,10 +66,10 @@ fun Question(question: Question, onSelectedOption: (String, String) -> Unit){
     ) {
         Column {
             Text(text = question.question, fontWeight = FontWeight.Bold)
-            for(alternative in question.alternatives){
-                Answer(selectedOption.value, alternative, onSelectedOption = {selected ->
+            for((index, alternative) in question.options.withIndex()){
+                Answer(selectedOption.value, alternative, index.toString(), onSelectedOption = {selected ->
                     selectedOption.value = selected
-                    onSelectedOption(selected, question.id)
+                    onSelectedOption(selected, index.toString())
                 })
             }
         }
@@ -79,7 +77,7 @@ fun Question(question: Question, onSelectedOption: (String, String) -> Unit){
 }
 
 @Composable
-fun Answer(selected: String?, alternative: Alternative, onSelectedOption: (String) -> Unit){
+fun Answer(selected: String?, alternative: String, index: String, onSelectedOption: (String) -> Unit){
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -87,11 +85,11 @@ fun Answer(selected: String?, alternative: Alternative, onSelectedOption: (Strin
             .padding(2.dp)
     ){
         RadioButton(
-            selected = selected == alternative.id,
+            selected = selected == index,
             onClick = {
-                onSelectedOption(alternative.id)
+                onSelectedOption(index)
             }
         )
-        Text(text = alternative.text)
+        Text(text = alternative)
     }
 }

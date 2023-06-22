@@ -7,6 +7,5 @@ data class UserLoginResource(
 
 data class UserLoginResponse(
     val username: String,
-    val password: String,
     val accessToken: String
 )
