@@ -2,6 +2,7 @@ package pe.edu.upc.asimov.ui.screens.navigation
 
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.navigation.NavOptions
@@ -12,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import pe.edu.upc.asimov.data.remote.exam.Exam
 import pe.edu.upc.asimov.data.remote.exam.ExamClient
+import pe.edu.upc.asimov.data.remote.test.ExamScore
 import pe.edu.upc.asimov.data.remote.user.UserClient
 import pe.edu.upc.asimov.data.remote.user.UserLoginResponse
 import pe.edu.upc.asimov.ui.screens.getScores.GetScores
@@ -27,6 +29,23 @@ import retrofit2.Response
 fun Navigation(){
     val navController = rememberNavController()
 
+    val exams = remember { mutableStateListOf<ExamScore>(
+        ExamScore("201910421","Matematica - 1º Competencia", 16),
+        ExamScore("201910421","Ingles - 2º Competencia", 18),
+        ExamScore("201910421","Historia - 1º Competencia", 18),
+        ExamScore("201910225","Matematica - 1º Competencia", 20),
+        ExamScore("201910225","Ingles - 2º Competencia", 19),
+        ExamScore("201910225","Historia - 1º Competencia", 16),
+        ExamScore("201910225","Razonamiento Verbal - 1º Competencia", 16),
+        ExamScore("201910045","Matematica - 1º Competencia", 17),
+        ExamScore("201910045","Ingles - 2º Competencia", 17),
+        ExamScore("201910045","Historia - 1º Competencia", 19),
+        ExamScore("201910146","Matematica - 1º Competencia", 19),
+        ExamScore("201910146","Ingles - 2º Competencia", 20),
+        ExamScore("201910146","Historia - 1º Competencia", 16)
+    )
+    }
+
     NavHost(navController = navController, startDestination = "login"){
         composable("login"){
             val userInterface = UserClient.build()
@@ -39,7 +58,7 @@ fun Navigation(){
                         Log.d("Debug",response.toString())
                         if (response.isSuccessful) {
                             Log.d("Debug",response.body()!!.toString())
-                            navController.navigate("studentHome")
+                            navController.navigate("studentHome/${user.username}")
                         }
                     }
                     override fun onFailure(call: Call<UserLoginResponse>, t: Throwable) {
@@ -48,7 +67,8 @@ fun Navigation(){
                 })
             })
         }
-        composable("studentHome") {
+        composable("studentHome/{studentCode}", arguments = listOf(navArgument("studentCode"){ type = NavType.StringType})) {
+            val studentCode = it.arguments?.getString("studentCode") as String
             val examInterface = ExamClient.build()
 
             StudentHome(goTest = {examCode ->
@@ -57,7 +77,7 @@ fun Navigation(){
                     override fun onResponse(call: Call<Exam>, response: Response<Exam>) {
                         if (response.isSuccessful) {
                             Log.d("Debug",response.body()!!.toString())
-                            navController.navigate("test/$examCode")
+                            navController.navigate("test/$examCode/$studentCode")
                         }
                     }
                     override fun onFailure(call: Call<Exam>, t: Throwable) {
@@ -65,11 +85,12 @@ fun Navigation(){
                     }
                 })
             }, goScores = {
-                navController.navigate("scores/201910421")
+                navController.navigate("scores/$studentCode")
             })
         }
-        composable("test/{testCode}", arguments = listOf(navArgument("testCode"){ type = NavType.StringType})){
+        composable("test/{testCode}/{studentCode}", arguments = listOf(navArgument("testCode"){ type = NavType.StringType}, navArgument("studentCode"){ type = NavType.StringType})){
             val testCode = it.arguments?.getString("testCode") as String
+            val studentCode = it.arguments?.getString("studentCode") as String
             val exam = remember {
                 mutableStateOf(Exam("",emptyList()))
             }
@@ -102,6 +123,7 @@ fun Navigation(){
                         score.value = score.value + 1
                     }
                 }
+                exams.add(ExamScore(studentCode,"Prueba IA", score.value))
                 navController.navigate("score/${score.value}/${questions.size}", navOptions)
             }, exam = exam.value)
         }
@@ -121,7 +143,7 @@ fun Navigation(){
         }
         composable("scores/{studentCode}", arguments = listOf(navArgument("studentCode"){ type = NavType.StringType })){
             val studentCode = it.arguments?.getString("studentCode") as String
-            GetScores(studentCode = studentCode, goBack = { navController.navigate("login") })
+            GetScores(exams = exams, studentCode = studentCode, goBack = { navController.navigate("login") })
         }
     }
 }

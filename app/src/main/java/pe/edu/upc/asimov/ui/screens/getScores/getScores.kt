@@ -18,23 +18,9 @@ import androidx.compose.ui.unit.sp
 import pe.edu.upc.asimov.data.remote.test.ExamScore
 
 @Composable
-fun GetScores(studentCode: String, goBack: () -> Unit){
-    val exams = arrayOf(
-        ExamScore("201910421","Matematica - 1º Competencia", 16),
-        ExamScore("201910421","Ingles - 2º Competencia", 18),
-        ExamScore("201910421","Historia - 1º Competencia", 18),
-        ExamScore("201910225","Matematica - 1º Competencia", 20),
-        ExamScore("201910225","Ingles - 2º Competencia", 19),
-        ExamScore("201910225","Historia - 1º Competencia", 16),
-        ExamScore("201910225","Razonamiento Verbal - 1º Competencia", 16),
-        ExamScore("201910045","Matematica - 1º Competencia", 17),
-        ExamScore("201910045","Ingles - 2º Competencia", 17),
-        ExamScore("201910045","Historia - 1º Competencia", 19),
-        ExamScore("201910146","Matematica - 1º Competencia", 19),
-        ExamScore("201910146","Ingles - 2º Competencia", 20),
-        ExamScore("201910146","Historia - 1º Competencia", 16)
-    )
-    val studentExams = exams.filter{ it.studentCode == "201910421" }
+fun GetScores(exams: List<ExamScore>, studentCode: String, goBack: () -> Unit){
+
+    val studentExams = exams.filter{ it.studentCode == studentCode }
     Column(
         modifier = Modifier
             .fillMaxSize()
