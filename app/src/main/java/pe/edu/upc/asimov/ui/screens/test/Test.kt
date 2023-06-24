@@ -1,8 +1,9 @@
 package pe.edu.upc.asimov.ui.screens.test
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -13,12 +14,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import pe.edu.upc.asimov.data.remote.exam.Alternative
 import pe.edu.upc.asimov.data.remote.exam.Exam
 import pe.edu.upc.asimov.data.remote.exam.Question
 
 @Composable
-fun Test(goBack: (List<Question>) -> Unit, exam: Exam){
+fun Test(goBack: (Int, Int) -> Unit, exam: Exam){
+    val score = remember {
+        mutableStateOf(0)
+    }
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -33,7 +36,14 @@ fun Test(goBack: (List<Question>) -> Unit, exam: Exam){
         Spacer(modifier = Modifier.height(20.dp))
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { goBack(exam.examDetailResources) },
+            onClick = {
+                exam.examDetailResources.forEach { question ->
+                    if (question.correctOptionOrder == question.selected) {
+                        score.value = score.value + 1
+                    }
+                }
+                goBack(score.value, exam.examDetailResources.size)
+                      },
             colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
         ) {
             Text(
@@ -44,9 +54,9 @@ fun Test(goBack: (List<Question>) -> Unit, exam: Exam){
             )
         }
         LazyColumn{
-            items(exam.examDetailResources){question ->
-                Question(question, onSelectedOption = {optionSelected, questionId ->
-                    exam.examDetailResources[questionId.toInt()].selected = optionSelected
+            itemsIndexed(exam.examDetailResources){index, question ->
+                Question(question, onSelectedOption = {optionSelected ->
+                    exam.examDetailResources[index].selected = optionSelected.toString()
                 })
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -54,7 +64,7 @@ fun Test(goBack: (List<Question>) -> Unit, exam: Exam){
     }
 }
 @Composable
-fun Question(question: Question, onSelectedOption: (String, String) -> Unit){
+fun Question(question: Question, onSelectedOption: (Int) -> Unit){
     val selectedOption = remember {
         mutableStateOf(question.selected)
     }
@@ -67,9 +77,9 @@ fun Question(question: Question, onSelectedOption: (String, String) -> Unit){
         Column {
             Text(text = question.question, fontWeight = FontWeight.Bold)
             for((index, alternative) in question.options.withIndex()){
-                Answer(selectedOption.value, alternative, index.toString(), onSelectedOption = {selected ->
-                    selectedOption.value = selected
-                    onSelectedOption(selected, index.toString())
+                Answer(selectedOption.value, alternative, index, onSelectedOption = {selected ->
+                    selectedOption.value = selected.toString()
+                    onSelectedOption(selected + 1)
                 })
             }
         }
@@ -77,7 +87,7 @@ fun Question(question: Question, onSelectedOption: (String, String) -> Unit){
 }
 
 @Composable
-fun Answer(selected: String?, alternative: String, index: String, onSelectedOption: (String) -> Unit){
+fun Answer(selected: String?, alternative: String, index: Int, onSelectedOption: (Int) -> Unit){
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -85,7 +95,7 @@ fun Answer(selected: String?, alternative: String, index: String, onSelectedOpti
             .padding(2.dp)
     ){
         RadioButton(
-            selected = selected == index,
+            selected = selected == index.toString(),
             onClick = {
                 onSelectedOption(index)
             }

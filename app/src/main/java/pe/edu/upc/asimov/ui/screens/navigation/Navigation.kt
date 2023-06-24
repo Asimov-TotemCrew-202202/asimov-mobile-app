@@ -73,9 +73,6 @@ fun Navigation(){
             val exam = remember {
                 mutableStateOf(Exam("",emptyList()))
             }
-            val score = remember {
-                mutableStateOf(0)
-            }
 
             val examInterface = ExamClient.build()
             val getExam = examInterface.getExam(testCode)
@@ -96,13 +93,8 @@ fun Navigation(){
                 }
             })
 
-            Test(goBack = { questions ->
-                questions.forEach { question ->
-                    if (question.correctOptionOrder == question.selected) {
-                        score.value = score.value + 1
-                    }
-                }
-                navController.navigate("score/${score.value}/${questions.size}", navOptions)
+            Test(goBack = { score, size ->
+                navController.navigate("score/${score}/${size}", navOptions)
             }, exam = exam.value)
         }
         composable("score/{score}/{questions}", arguments = listOf(navArgument("score"){ type = NavType.StringType}, navArgument("questions"){ type = NavType.StringType})){
