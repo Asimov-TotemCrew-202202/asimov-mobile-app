@@ -5,6 +5,6 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface StudentInterface {
-    @GET("students/{index}")
-    fun getStudent(@Path("index") index: String): Call<Student>
+    @GET("getByUser/{userId}")
+    fun getStudentId(@Path("userId") userId: String): Call<Student>
 }

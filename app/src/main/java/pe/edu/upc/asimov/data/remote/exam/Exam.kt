@@ -6,13 +6,9 @@ data class Exam(
 )
 
 data class Question(
+    val id: String,
     val question: String,
     val options: List<String>,
     var selected: String,
     val correctOptionOrder: String
 )
-
-data class Alternative(
-    val text: String
-)
-

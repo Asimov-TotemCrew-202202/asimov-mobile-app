@@ -14,13 +14,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import pe.edu.upc.asimov.data.remote.alternatives.AlternativeData
+import pe.edu.upc.asimov.data.remote.alternatives.AlternativeList
 import pe.edu.upc.asimov.data.remote.exam.Exam
 import pe.edu.upc.asimov.data.remote.exam.Question
 
 @Composable
-fun Test(goBack: (Int, Int) -> Unit, exam: Exam){
+fun Test(goBack: (AlternativeList) -> Unit, exam: Exam){
     val score = remember {
         mutableStateOf(0)
+    }
+    val questionIndex = remember {
+        mutableStateOf(0)
+    }
+    val alternativesList = remember {
+        mutableStateOf(AlternativeList(emptyList()))
     }
     Column (
         modifier = Modifier
@@ -38,35 +46,48 @@ fun Test(goBack: (Int, Int) -> Unit, exam: Exam){
             modifier = Modifier.fillMaxWidth(),
             onClick = {
                 exam.examDetailResources.forEach { question ->
-                    if (question.correctOptionOrder == question.selected) {
-                        score.value = score.value + 1
-                    }
+                    Log.d("Id", question.id)
+                    Log.d("Selected", question.selected)
+                    alternativesList.value.alternatives += AlternativeData(question.id, question.selected)
                 }
-                goBack(score.value, exam.examDetailResources.size)
+                goBack(alternativesList.value)
                       },
             colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
         ) {
             Text(
-                "Terminar Evaluación",
+                "Terminar Examen",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp
             )
         }
-        LazyColumn{
-            itemsIndexed(exam.examDetailResources){index, question ->
-                Question(question, onSelectedOption = {optionSelected ->
-                    exam.examDetailResources[index].selected = optionSelected.toString()
-                })
-                Spacer(modifier = Modifier.height(10.dp))
+        if (questionIndex.value + 1 != exam.examDetailResources.size){
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    questionIndex.value = questionIndex.value+1
+                },
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
+            ) {
+                Text(
+                    "Next Question",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
             }
+        }
+        if (exam.examDetailResources.isNotEmpty()) {
+            Question(exam.examDetailResources[questionIndex.value], onSelectedOption = {selectedOption ->
+                exam.examDetailResources[questionIndex.value].selected = selectedOption.toString()
+            })
         }
     }
 }
 @Composable
 fun Question(question: Question, onSelectedOption: (Int) -> Unit){
     val selectedOption = remember {
-        mutableStateOf(question.selected)
+        mutableStateOf(-1)
     }
     Card(
         modifier = Modifier
@@ -78,7 +99,7 @@ fun Question(question: Question, onSelectedOption: (Int) -> Unit){
             Text(text = question.question, fontWeight = FontWeight.Bold)
             for((index, alternative) in question.options.withIndex()){
                 Answer(selectedOption.value, alternative, index, onSelectedOption = {selected ->
-                    selectedOption.value = selected.toString()
+                    selectedOption.value = selected
                     onSelectedOption(selected + 1)
                 })
             }
@@ -87,7 +108,7 @@ fun Question(question: Question, onSelectedOption: (Int) -> Unit){
 }
 
 @Composable
-fun Answer(selected: String?, alternative: String, index: Int, onSelectedOption: (Int) -> Unit){
+fun Answer(selectedOption: Int?, alternative: String, index: Int, onSelectedOption: (Int) -> Unit){
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -95,7 +116,7 @@ fun Answer(selected: String?, alternative: String, index: Int, onSelectedOption:
             .padding(2.dp)
     ){
         RadioButton(
-            selected = selected == index.toString(),
+            selected = selectedOption == index,
             onClick = {
                 onSelectedOption(index)
             }

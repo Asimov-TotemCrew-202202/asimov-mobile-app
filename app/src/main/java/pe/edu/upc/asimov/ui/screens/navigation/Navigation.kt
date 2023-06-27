@@ -10,8 +10,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import pe.edu.upc.asimov.data.remote.alternatives.Alternative
+import pe.edu.upc.asimov.data.remote.alternatives.AlternativePost
+import pe.edu.upc.asimov.data.remote.alternatives.AlternativesClient
 import pe.edu.upc.asimov.data.remote.exam.Exam
 import pe.edu.upc.asimov.data.remote.exam.ExamClient
+import pe.edu.upc.asimov.data.remote.scores.Score
+import pe.edu.upc.asimov.data.remote.scores.ScoreClient
+import pe.edu.upc.asimov.data.remote.students.Student
+import pe.edu.upc.asimov.data.remote.students.StudentClient
 import pe.edu.upc.asimov.data.remote.user.UserClient
 import pe.edu.upc.asimov.data.remote.user.UserLoginResponse
 import pe.edu.upc.asimov.ui.screens.getScores.GetScores
@@ -29,17 +36,32 @@ fun Navigation(){
 
     NavHost(navController = navController, startDestination = "login"){
         composable("login"){
+            val studentId = remember {
+                mutableStateOf("")
+            }
             val userInterface = UserClient.build()
-
+            val studentInterface = StudentClient.build()
 
             Login(goTest = { user ->
                 val login = userInterface.login(user)
                 login.enqueue(object : Callback<UserLoginResponse> {
                     override fun onResponse(call: Call<UserLoginResponse>, response: Response<UserLoginResponse>) {
-                        Log.d("Debug",response.toString())
                         if (response.isSuccessful) {
+                            val getStudentId = studentInterface.getStudentId(response.body()!!.id)
+                            getStudentId.enqueue(object : Callback<Student> {
+                                override fun onResponse(call: Call<Student>, response: Response<Student>) {
+                                    if (response.isSuccessful) {
+                                        studentId.value = response.body()!!.id
+                                        Log.d("Debug",response.body()!!.toString())
+                                        navController.navigate("studentHome/${studentId.value}")
+                                    }
+                                }
+                                override fun onFailure(call: Call<Student>, t: Throwable) {
+                                    Log.d("Error",t.toString())
+                                }
+                            })
+
                             Log.d("Debug",response.body()!!.toString())
-                            navController.navigate("studentHome")
                         }
                     }
                     override fun onFailure(call: Call<UserLoginResponse>, t: Throwable) {
@@ -48,7 +70,8 @@ fun Navigation(){
                 })
             })
         }
-        composable("studentHome") {
+        composable("studentHome/{studentId}", arguments = listOf(navArgument("studentId"){ type = NavType.StringType})) {
+            val studentId = it.arguments?.getString("studentId") as String
             val examInterface = ExamClient.build()
 
             StudentHome(goTest = {examCode ->
@@ -57,7 +80,7 @@ fun Navigation(){
                     override fun onResponse(call: Call<Exam>, response: Response<Exam>) {
                         if (response.isSuccessful) {
                             Log.d("Debug",response.body()!!.toString())
-                            navController.navigate("test/$examCode")
+                            navController.navigate("test/$examCode/$studentId")
                         }
                     }
                     override fun onFailure(call: Call<Exam>, t: Throwable) {
@@ -65,11 +88,12 @@ fun Navigation(){
                     }
                 })
             }, goScores = {
-                navController.navigate("scores/201910421")
+                navController.navigate("scores/$studentId")
             })
         }
-        composable("test/{testCode}", arguments = listOf(navArgument("testCode"){ type = NavType.StringType})){
+        composable("test/{testCode}/{studentId}", arguments = listOf(navArgument("testCode"){ type = NavType.StringType}, navArgument("studentId"){ type = NavType.StringType})){
             val testCode = it.arguments?.getString("testCode") as String
+            val studentId = it.arguments?.getString("studentId") as String
             val exam = remember {
                 mutableStateOf(Exam("",emptyList()))
             }
@@ -93,8 +117,23 @@ fun Navigation(){
                 }
             })
 
-            Test(goBack = { score, size ->
-                navController.navigate("score/${score}/${size}", navOptions)
+            val alternativesInterface = AlternativesClient.build()
+
+            Test(goBack = { alternatives ->
+                alternatives.alternatives.forEach{alternative ->
+                    val postAlternatives = alternativesInterface.postAlternative(studentId, alternative.id, AlternativePost(alternative.selected))
+                    postAlternatives.enqueue(object : Callback<Alternative> {
+                        override fun onResponse(call: Call<Alternative>, response: Response<Alternative>) {
+                            if (response.isSuccessful) {
+                                Log.d("Debug",response.body()!!.toString())
+                            }
+                        }
+                        override fun onFailure(call: Call<Alternative>, t: Throwable) {
+                            Log.d("Error",t.toString())
+                        }
+                    })
+                }
+                navController.navigate("studentHome/$studentId", navOptions)
             }, exam = exam.value)
         }
         composable("score/{score}/{questions}", arguments = listOf(navArgument("score"){ type = NavType.StringType}, navArgument("questions"){ type = NavType.StringType})){
@@ -112,8 +151,30 @@ fun Navigation(){
                 questions = questions)
         }
         composable("scores/{studentCode}", arguments = listOf(navArgument("studentCode"){ type = NavType.StringType })){
-            val studentCode = it.arguments?.getString("studentCode") as String
-            GetScores(studentCode = studentCode, goBack = { navController.navigate("login") })
+            val studentId = it.arguments?.getString("studentCode") as String
+            val scores = remember {
+                mutableStateOf<List<Score>?>(null)
+            }
+
+            val scoreInterface = ScoreClient.build()
+            val getScores = scoreInterface.getScores(studentId)
+            getScores.enqueue(object : Callback<List<Score>> {
+                override fun onResponse(call: Call<List<Score>>, response: Response<List<Score>>) {
+                    if (response.isSuccessful) {
+                        Log.d("Debug",response.body()!!.toString())
+                        scores.value = response.body()!!
+                        val scoresGrouped = scores.value!!.groupBy { score ->
+                            score.examId
+                        }
+                        Log.d("Scores",scoresGrouped.toString())
+                    }
+                }
+                override fun onFailure(call: Call<List<Score>>, t: Throwable) {
+                    Log.d("Error",t.toString())
+                }
+            })
+
+            GetScores(studentCode = studentId, goBack = { navController.navigate("studentHome/$studentId") })
         }
     }
 }
