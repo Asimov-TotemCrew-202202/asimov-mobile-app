@@ -19,7 +19,8 @@ data class Answer(
 )
 
 data class ExamScore(
-    val studentCode: String,
-    val title: String,
-    val score: Int
+    val examId: Int,
+    val topicName: String,
+    val finalScore: Int,
+    val questionsCount: Int
 )

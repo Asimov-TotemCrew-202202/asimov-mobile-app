@@ -25,8 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun StudentHome(goTest: (examCode: String) -> Unit,
-                goScores: () -> Unit)
+fun StudentHome(
+    goTest: (examCode: String) -> Unit,
+    goScores: () -> Unit,
+    logOut: () -> Unit
+)
 {
     Column (
         modifier = Modifier
@@ -86,6 +89,19 @@ fun StudentHome(goTest: (examCode: String) -> Unit,
         ) {
             Text(
                 "Ver mis notas",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
+        }
+        Spacer(modifier = Modifier.height(70.dp))
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { logOut() },
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
+        ) {
+            Text(
+                "Cerrar Sesión",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp

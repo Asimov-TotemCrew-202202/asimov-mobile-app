@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,7 +52,7 @@ fun Login(
         }
         Spacer(modifier = Modifier.height(20.dp))
         Text(
-            "Ingresar",
+            "Inicio de Sesión",
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp
         )
@@ -60,7 +61,7 @@ fun Login(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Left,
             fontWeight = FontWeight.Bold,
-            text = "Username"
+            text = "Usuario"
         )
         TextField(
             modifier = Modifier.fillMaxWidth(),
@@ -72,12 +73,13 @@ fun Login(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Left,
             fontWeight = FontWeight.Bold,
-            text = "Password"
+            text = "Contraseña"
         )
         TextField(
             modifier = Modifier.fillMaxWidth(),
             value = studentPassword.value,
-            onValueChange = { studentPassword.value = it }
+            onValueChange = { studentPassword.value = it },
+            visualTransformation = PasswordVisualTransformation()
         )
         Spacer(modifier = Modifier.height(20.dp))
         Button(
@@ -88,7 +90,7 @@ fun Login(
             colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
         ) {
             Text(
-                "Sign in",
+                "Ingresar",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp

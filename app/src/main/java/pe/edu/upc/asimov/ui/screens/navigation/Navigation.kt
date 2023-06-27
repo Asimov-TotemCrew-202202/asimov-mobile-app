@@ -19,6 +19,7 @@ import pe.edu.upc.asimov.data.remote.scores.Score
 import pe.edu.upc.asimov.data.remote.scores.ScoreClient
 import pe.edu.upc.asimov.data.remote.students.Student
 import pe.edu.upc.asimov.data.remote.students.StudentClient
+import pe.edu.upc.asimov.data.remote.test.ExamScore
 import pe.edu.upc.asimov.data.remote.user.UserClient
 import pe.edu.upc.asimov.data.remote.user.UserLoginResponse
 import pe.edu.upc.asimov.ui.screens.getScores.GetScores
@@ -53,7 +54,12 @@ fun Navigation(){
                                     if (response.isSuccessful) {
                                         studentId.value = response.body()!!.id
                                         Log.d("Debug",response.body()!!.toString())
-                                        navController.navigate("studentHome/${studentId.value}")
+                                        navController.navigate(
+                                            "studentHome/${studentId.value}",
+                                            NavOptions.Builder()
+                                                .setPopUpTo("login", true)
+                                                .build()
+                                        )
                                     }
                                 }
                                 override fun onFailure(call: Call<Student>, t: Throwable) {
@@ -80,7 +86,12 @@ fun Navigation(){
                     override fun onResponse(call: Call<Exam>, response: Response<Exam>) {
                         if (response.isSuccessful) {
                             Log.d("Debug",response.body()!!.toString())
-                            navController.navigate("test/$examCode/$studentId")
+                            navController.navigate(
+                                "test/$examCode/$studentId",
+                                NavOptions.Builder()
+                                    .setPopUpTo(navController.graph.id, true)
+                                    .build()
+                            )
                         }
                     }
                     override fun onFailure(call: Call<Exam>, t: Throwable) {
@@ -89,6 +100,13 @@ fun Navigation(){
                 })
             }, goScores = {
                 navController.navigate("scores/$studentId")
+            }, logOut = {
+                navController.navigate(
+                    "login",
+                    NavOptions.Builder()
+                        .setPopUpTo(navController.graph.id, true)
+                        .build()
+                )
             })
         }
         composable("test/{testCode}/{studentId}", arguments = listOf(navArgument("testCode"){ type = NavType.StringType}, navArgument("studentId"){ type = NavType.StringType})){
@@ -100,10 +118,6 @@ fun Navigation(){
 
             val examInterface = ExamClient.build()
             val getExam = examInterface.getExam(testCode)
-
-            val navOptions = NavOptions.Builder()
-                .setPopUpTo("test/{testCode}", true)
-                .build()
 
             getExam.enqueue(object : Callback<Exam> {
                 override fun onResponse(call: Call<Exam>, response: Response<Exam>) {
@@ -133,7 +147,12 @@ fun Navigation(){
                         }
                     })
                 }
-                navController.navigate("studentHome/$studentId", navOptions)
+                navController.navigate(
+                    "studentHome/$studentId",
+                    NavOptions.Builder()
+                        .setPopUpTo(navController.graph.id, true)
+                        .build()
+                )
             }, exam = exam.value)
         }
         composable("score/{score}/{questions}", arguments = listOf(navArgument("score"){ type = NavType.StringType}, navArgument("questions"){ type = NavType.StringType})){
@@ -155,6 +174,9 @@ fun Navigation(){
             val scores = remember {
                 mutableStateOf<List<Score>?>(null)
             }
+            var groupedScores = remember {
+                mutableStateOf<List<ExamScore>>(emptyList())
+            }
 
             val scoreInterface = ScoreClient.build()
             val getScores = scoreInterface.getScores(studentId)
@@ -163,10 +185,14 @@ fun Navigation(){
                     if (response.isSuccessful) {
                         Log.d("Debug",response.body()!!.toString())
                         scores.value = response.body()!!
-                        val scoresGrouped = scores.value!!.groupBy { score ->
-                            score.examId
-                        }
-                        Log.d("Scores",scoresGrouped.toString())
+                        groupedScores.value = scores.value!!.groupBy { it.examId }.
+                            map { (examId, scores) ->
+                                val topicName = scores.first().topicName
+                                val finalScore = scores.sumOf { it.finalScore }
+                                val questionsCount = scores.size
+                                ExamScore(examId, topicName, finalScore, questionsCount)
+                            }
+                        Log.d("Scores",groupedScores.toString())
                     }
                 }
                 override fun onFailure(call: Call<List<Score>>, t: Throwable) {
@@ -174,7 +200,11 @@ fun Navigation(){
                 }
             })
 
-            GetScores(studentCode = studentId, goBack = { navController.navigate("studentHome/$studentId") })
+            GetScores(
+                studentCode = studentId,
+                scores = groupedScores.value,
+                goBack = { navController.popBackStack() }
+            )
         }
     }
 }

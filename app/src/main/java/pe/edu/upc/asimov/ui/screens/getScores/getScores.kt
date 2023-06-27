@@ -3,10 +3,9 @@ package pe.edu.upc.asimov.ui.screens.getScores
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,36 +17,36 @@ import androidx.compose.ui.unit.sp
 import pe.edu.upc.asimov.data.remote.test.ExamScore
 
 @Composable
-fun GetScores(studentCode: String, goBack: () -> Unit){
-    val exams = arrayOf(
-        ExamScore("201910421","Matematica - 1º Competencia", 16),
-        ExamScore("201910421","Ingles - 2º Competencia", 18),
-        ExamScore("201910421","Historia - 1º Competencia", 18),
-        ExamScore("201910225","Matematica - 1º Competencia", 20),
-        ExamScore("201910225","Ingles - 2º Competencia", 19),
-        ExamScore("201910225","Historia - 1º Competencia", 16),
-        ExamScore("201910225","Razonamiento Verbal - 1º Competencia", 16),
-        ExamScore("201910045","Matematica - 1º Competencia", 17),
-        ExamScore("201910045","Ingles - 2º Competencia", 17),
-        ExamScore("201910045","Historia - 1º Competencia", 19),
-        ExamScore("201910146","Matematica - 1º Competencia", 19),
-        ExamScore("201910146","Ingles - 2º Competencia", 20),
-        ExamScore("201910146","Historia - 1º Competencia", 16)
-    )
-    val studentExams = exams.filter{ it.studentCode == "201910421" }
+fun GetScores(studentCode: String, scores: List<ExamScore>, goBack: () -> Unit){
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = {
+                goBack()
+            }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back"
+                )
+            }
+            Text(
+                text = "Regresar",
+                fontSize = 15.sp,
+                modifier = Modifier.weight(1f)
+            )
+        }
+        Spacer(modifier = Modifier.height(5.dp))
         Text(
-            text = "Bienvenido alumno, Nombre Apellido",
+            text = "Mis Calificaciones Evaluaciones IA",
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp
         )
         Text(
-            text = "Codigo de alumno: 201910421",
+            text = "Codigo de alumno: $studentCode",
             fontSize = 20.sp
         )
         Spacer(modifier = Modifier.height(20.dp))
@@ -58,28 +57,15 @@ fun GetScores(studentCode: String, goBack: () -> Unit){
         )
         Spacer(modifier = Modifier.height(10.dp))
         LazyColumn{
-            items(studentExams){exam ->
-                ScoreItem(exam.title, exam.score)
+            items(scores){score ->
+                ScoreItem(score.examId, score.topicName, score.finalScore/score.questionsCount)
             }
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = { goBack() },
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
-        ) {
-            Text(
-                "Cerrar Sesión",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
-            )
         }
     }
 }
 
 @Composable
-fun ScoreItem(examTitle: String, examScore: Int){
+fun ScoreItem(examId: Int, examTitle: String, examScore: Int){
     Card(
         modifier = Modifier
             .padding(15.dp)
@@ -87,15 +73,43 @@ fun ScoreItem(examTitle: String, examScore: Int){
         elevation = 5.dp
     ) {
         Column {
+            Row() {
+                Text(
+                    text = "Id del Examen: ",
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(5.dp)
+                )
+                Text(
+                    text = examId.toString(),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(5.dp)
+                )
+            }
             Text(
-                text = "$examTitle:",
+                text = "Topico de la evaluación:",
+                fontSize = 20.sp,
+                modifier = Modifier.padding(5.dp)
+            )
+            Text(
+                text = examTitle,
                 fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
+                fontSize = 20.sp,
+                modifier = Modifier.padding(5.dp)
             )
-            Text(
-                text = "Calificación: $examScore",
-                fontSize = 20.sp
-            )
+            Row() {
+                Text(
+                    text = "Calificación: ",
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(5.dp)
+                )
+                Text(
+                    text = examScore.toString(),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(5.dp)
+                )
+            }
         }
     }
 }
