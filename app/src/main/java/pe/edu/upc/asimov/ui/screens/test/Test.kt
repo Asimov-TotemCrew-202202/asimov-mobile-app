@@ -37,9 +37,9 @@ fun Test(goBack: (AlternativeList) -> Unit, exam: Exam){
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Test",
+            text = "Completa las siguientes preguntas",
             fontWeight = FontWeight.Bold,
-            fontSize = 20.sp
+            fontSize = 25.sp
         )
         Spacer(modifier = Modifier.height(20.dp))
         Button(
@@ -77,6 +77,7 @@ fun Test(goBack: (AlternativeList) -> Unit, exam: Exam){
                 )
             }
         }
+        Spacer(modifier = Modifier.height(20.dp))
         if (exam.examDetailResources.isNotEmpty()) {
             Question(exam.examDetailResources[questionIndex.value], onSelectedOption = {selectedOption ->
                 exam.examDetailResources[questionIndex.value].selected = selectedOption.toString()
