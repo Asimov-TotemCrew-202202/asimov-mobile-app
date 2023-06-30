@@ -139,8 +139,9 @@ fun Navigation(){
                     postAlternatives.enqueue(object : Callback<Alternative> {
                         override fun onResponse(call: Call<Alternative>, response: Response<Alternative>) {
                             if (response.isSuccessful) {
-                                Log.d("Debug",response.body()!!.toString())
+                                Log.d("Post Alternatives",response.body()!!.toString())
                             }
+                            Log.d("Post Alternatives",response.toString())
                         }
                         override fun onFailure(call: Call<Alternative>, t: Throwable) {
                             Log.d("Error",t.toString())
@@ -183,7 +184,7 @@ fun Navigation(){
             getScores.enqueue(object : Callback<List<Score>> {
                 override fun onResponse(call: Call<List<Score>>, response: Response<List<Score>>) {
                     if (response.isSuccessful) {
-                        Log.d("Debug",response.body()!!.toString())
+                        Log.d("Get Scores",response.body()!!.toString())
                         scores.value = response.body()!!
                         groupedScores.value = scores.value!!.groupBy { it.examId }.
                             map { (examId, scores) ->
